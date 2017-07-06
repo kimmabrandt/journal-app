@@ -1,6 +1,7 @@
 var express = require('express'),
   mongoose = require('mongoose'),
   bodyParser = require('body-parser'),
+  passport = require('passport'),
   cookieParser = require('cookie-parser'),
   methodOverride = require('method-override'),
   cors = require('cors'),
@@ -12,16 +13,23 @@ var env = process.env.NODE_ENV = process.env.NODE_ENV || 'development',
 
 mongoose.connect(envConfig.db);
 
+// PASSPORT CONFIG
+require('./server/passport')(passport);
+
 // EXPRESS CONFIG
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(methodOverride());
 app.use(cookieParser());
+app.set('view engine', 'ejs');
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.static(__dirname + '/public'));
 
 // ROUTES
-require('./server/routes')(app);
+require('./server/routes')(app, passport);
 
 // Start server
 app.listen(envConfig.port, function(){
